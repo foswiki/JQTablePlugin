@@ -1,0 +1,10 @@
+# Release manifest for JQTablePlugin
+data/System/JQTablePlugin.txt 0644 Documentation
+lib/Foswiki/Plugins/JQTablePlugin.pm 0644 Perl module
+lib/Foswiki/Plugins/JQTablePlugin/TableSorter.pm 0644 Perl module
+pub/System/JQTablePlugin/tables_src.js 0644 Javascript module
+pub/System/JQTablePlugin/tables.js 0644 Javascript module
+pub/System/JQTablePlugin/tables.js.gz 0644 Javascript module
+pub/System/JQTablePlugin/jquery.tablesorter.min.js 0644 Javascript module
+pub/System/JQTablePlugin/jquery.tablesorter.min.js.gz 0644 Javascript module
+

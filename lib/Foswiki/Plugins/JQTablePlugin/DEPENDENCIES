@@ -1,0 +1,5 @@
+# Dependencies for JQTablePlugin
+# Example:
+# Time::ParseDate,>=2003.0211,cpan,Required.
+Foswiki::Plugins::JQueryPlugin,>=0,perl,Required
+
