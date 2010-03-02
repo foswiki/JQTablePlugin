@@ -6,14 +6,20 @@
 
 %TOC%
 
-This *work-in-progress* _aims_ to be a 99% replacement for !TablePlugin. It requires Javascript
-to be enabled in the browser, and does *not* fall back to TablePlugin, so only use it if you
-are sure all users will have Javascript enabled.
+This plugin does two things:
+   1 If TablePlugin is enabled, it enhances TablePlugin with client-side column sorting (if Javascript is enabled)
+   1 If !TablePlugin is _not_ enabled, it performs the same processing as TablePlugin except it does it in the browser.
 
-This is a work in progress and it's not perfect yet; some notable omissions:
-   1 Now sort icon in table headers (just click the header to sort)
-   1 Some issues with sorting when there are multiple header rows
-   1 Sort direction and initcolumns controls don't work
+Some notable omissions:
+   * Sorting doesn't work correctly if you have multiple header rows
+
+*when used without TablePlugin*
+   * No sort icon in table headers (just click the header to sort)
+   * The sorted data background doesn't alternate if more than one colour is given.
+
+*when used with TablePlugin:*
+   * Sorted column background doesn't work
+
 You can help improve it, please feel free to do so.
 
 Sorting is done using the jQuery tablesorter plugin written by Christian Bach,
@@ -21,19 +27,22 @@ which is included.
 
 ---++ Usage
 
-Install it; disable TablePlugin and enable this plugin. Click on column headers to sort.
+If used with TablePlugin: Click on column headers to sort.
 
-See TablePlugin for other usage.
+If used without TablePlugin: Behaviour should be identical to TablePlugin.
+
+See TablePlugin for more information.
 
 ---++ Installation Instructions
 
 %$INSTALL_INSTRUCTIONS%
 
 ---++ Info
+Another great Foswiki extension from the <a style="text-decoration:none" href="http://wikiring.com"><img src="%ATTACHURLPATH%/wikiringlogo20x20.png" alt="" /> *WikiRing* </a> - working together to improve your wiki experience!
 
 |  Author(s): | Crawford Currie http://c-dot.co.uk |
 |  Copyright: | Copyright &copy; 2010 Crawford Currie |
-|  License: | [[http://www.gnu.org/licenses/gpl.html][GPL (Gnu General Public License)]] |
+|  License: |  [http://www.gnu.org/licenses/old-licenses/gpl-2.0.html][Gnu General Public License v2]] |
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |

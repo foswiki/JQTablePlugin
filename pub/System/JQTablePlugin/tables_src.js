@@ -23,18 +23,14 @@ jQuery(document).ready(
             // Process elements marked with "jqtp_process". These are generated
             // when %TABLE tags are expanded.
             process : function() {
-                $(".jqtp_process").each(
-                    function() {
-                        // Find the next table in the DOM
-                        var pdata = $(this).text();
-                        var params = eval('('+pdata+')');
-                        var table = jqtp.nextTable(this);
-                        $(this).remove();
-                        if (!table)
-                            return;
-                        table = $(table);
-                        jqtp.doTable(params, table);
-                    });
+                var pdata = '({' + $(this).attr('title') + '})';
+                var params = eval(pdata);
+                var table = jqtp.nextTable(this);
+                if (!table)
+                    return;
+                $(table).attr("jqtp_params", pdata);
+                jqtp.doTable(params, $(table));
+                $(this).remove();
             },
             
             // Find the next TABLE tag after the given element. This matches
@@ -79,6 +75,19 @@ jQuery(document).ready(
                 var hrc = p.headerrows;
                 var frc = p.footerrows;
 
+                jqtp.cleanHeadAndFoot(t, hrc, frc);
+            
+                jqtp.colours(p, t);
+                jqtp.borders(p, t);
+                jqtp.layout(p, t);
+                jqtp.align(p, t);
+                if (p.sort == "on" && (p.disableallsort != "on")) {
+                    t.addClass("jqtp_sortable");
+                }
+            },
+
+            // try and pull out head and foot
+            cleanHeadAndFoot : function(t, hrc, frc) {
                 var bodies = t.find('tbody');
                 var b = bodies[0];
                 var h = t.find('thead');
@@ -108,10 +117,28 @@ jQuery(document).ready(
                 }
 
                 var f = t.find('tfoot');
-                if (f.length == 0 && $(b).children().length > 0 && frc > 0) {
+                if (f.length != 0 && f.children().length == 0) {
+                    // There's a bug in Render.pm that makes it generate
+                    // an empty tfoot even if there are footer rows
+                    // Remove empty tfoot and recompute
+                    f.remove();
+                    f = [];
+                }
+                if (f.length == 0 && $(b).children().length > 0) {
                     // No TFOOT, are there enough rows in the body?
-                    if (frc > $(b).children().length)
-                        frc = $(b).children().length;
+                    if (frc != undefined) {
+                        if (frc > $(b).children().length)
+                            frc = $(b).children().length;
+                    } else {
+                        // Footer rows not explicitly defined - see
+                        // if we can find footer rows by groping
+                        frc = 0;
+                        var lc = b.lastChild;
+                        while (lc && lc.firstChild.tagName == 'TH') {
+                            frc++;
+                            lc = lc.previousSibling;
+                        }
+                    }
                     if (frc > 0) {
                         bodies.after("<tfoot></tfoot>");
                         f = t.find('tfoot');
@@ -121,23 +148,6 @@ jQuery(document).ready(
                         }
                     }
                 }
-            
-                jqtp.colours(p, t);
-                jqtp.borders(p, t);
-                jqtp.layout(p, t);
-                jqtp.align(p, t);
-                if (p.sort == "on" && (p.disableallsort != "on")) {
-                    t.addClass("jqtp_sortable");
-                    jqtp.sorts(p, t);
-                }
-            },
-
-            // handle sort options
-            sorts : function(p, t) {
-                var sortcol = p.initSort;
-                if (sortcol <= 0) sortcol = 1;
-                var sortdir = p.initdirection;
-                var sortcolbg = p.databgsorted
             },
 
             // handle colour options
@@ -245,22 +255,71 @@ jQuery(document).ready(
                     t.find("tbody > tr > td")
                         .add(t.find("tbody > tr > th"))
                         .css("text-align", p.headeralign);
+            },
+
+            // handle sort options; cache them on the table for picking up when
+            // we init tablesorter
+            makeSortable : function() {
+                var sortOpts;
+
+                var pdata = $(this).attr("jqtp_params");
+                if (pdata != undefined) {
+                    $(this).removeAttr("jqtp_params");
+                    var p = eval(pdata);
+                    var sortcol = [0, 0];
+
+                    if (p.initSort != undefined) {
+                        if (!sortOpts) sortOpts = {};
+                        sortcol[0] = p.initSort - 1;
+                        sortOpts.sortList = [sortcol];
+                    }
+                    if (p.initdirection != undefined) {
+                        if (!sortOpts) sortOpts = {};
+                        sortcol[1] = (p.initdirection == "down") ? 1 : 0;
+                        sortOpts.sortList = [sortcol];
+                    }
+
+                    if (p.databgsorted != undefined) {
+                        if (!sortOpts) sortOpts = {};
+
+                        var className = 'jqtp_databgsorted_'
+                            + p.databgsorted.replace(/\W/g, '_');
+
+                        /* Simplification; rather than pissing about colouring
+                           alternate rows, paint all rows the same colour. */
+                        var cols = p.databgsorted.split(/\s*,\s*/);
+                        col = cols[0];
+
+                        $("body").append('<style type="text/css">.' + className
+                                       + '{background-color:' + col
+                                       + '}</style>');
+                        sortOpts.cssAsc = className;
+                        sortOpts.cssDesc = className;
+                    }
+                }
+                if (!$(this).find("thead").length) {
+                    jqtp.cleanHeadAndFoot($(this));
+                }
+
+                $(this).tablesorter(sortOpts);
             }
+
         };
 
         // Process tables with a %TABLE tag
-        jqtp.process();
+        $(".jqtp_process").each(jqtp.process);
 
         // If sort is all, attach the sortable class to all tables
         var sort = $("meta[name='JQTABLEPLUGINSORT']").attr("content");
         if (sort) {
-            if (sort == 'all')
+            if (sort == 'all') {
                 $("table").addClass("jqtp_sortable");
-            else if (sort == 'attachments')
+            } else if (sort == 'attachments') {
                 // Just attachments
                 $(".foswikiAttachments table").addClass("jqtp_sortable");
+            }
         }
 
         // Process tables marked as sortable
-        $(".jqtp_sortable").tablesorter();
+        $(".jqtp_sortable").each(jqtp.makeSortable);
     });
