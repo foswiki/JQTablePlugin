@@ -9,15 +9,15 @@ jQuery(document).ready(
         var jqtp = {
             // Mappings for tableframe attributes
             tableframe: {
-                void:   'none',
-                above:  'solid none none none',
-                below:  'none none solid none',
-                lhs:    'none none none solid',
-                rhs:    'none solid none none',
-                hsides: 'solid none solid none',
-                vsides: 'none solid none solid',
-                box:    'solid',
-                border: 'solid'
+                'void':   'none',
+                'above':  'solid none none none',
+                'below':  'none none solid none',
+                'lhs':    'none none none solid',
+                'rhs':    'none solid none none',
+                'hsides': 'solid none solid none',
+                'vsides': 'none solid none solid',
+                'box':    'solid',
+                'border': 'solid'
             },
 
             // Process elements marked with "jqtp_process". These are generated
@@ -76,7 +76,9 @@ jQuery(document).ready(
                 var frc = p.footerrows;
 
                 jqtp.cleanHeadAndFoot(t, hrc, frc);
-            
+
+                jqtp.collapseCells(t);
+
                 jqtp.colours(p, t);
                 jqtp.borders(p, t);
                 jqtp.layout(p, t);
@@ -84,6 +86,39 @@ jQuery(document).ready(
                 if (p.sort == "on" && (p.disableallsort != "on")) {
                     t.addClass("jqtp_sortable");
                 }
+            },
+
+            // Find cell-collapse marks (^) and assign a rowspan
+            // to the first non-^ cell in the rows above.
+            collapseCells : function(t) {
+                var span = /^\s*\^\s*$/;
+                t.find("tr").each(
+                    function () {
+                        $(this).find("td")
+                            .add($(this).find("th"))
+                            .filter(
+                                function() {
+                                    return span.test( $(this).text() );
+                                })
+                            .each(
+                                function() {
+                                    var offset = $(this).prevAll().length;
+                                    var rb = $(this);
+                                    do {
+                                        rb = rb.parent().prev()
+                                            .children().eq(offset);
+                                    } while (span.test(rb.text()));
+                                    rb.attr("rowspan", rb.attr("rowspan") + 1);
+                                });
+                    });
+                // Now chop out the spanned cells
+                t.find("td")
+                .add($(this).find("th"))
+                .filter(
+                    function() {
+                        return span.test( $(this).text() );
+                    })
+                .remove();
             },
 
             // try and pull out head and foot
@@ -101,7 +136,7 @@ jQuery(document).ready(
                         // See if we can find header rows by groping
                         hrc = 0;
                         var fc = b.firstChild;
-                        while (fc && fc.firstChild.tagName == 'TH') {
+                        while (fc && fc.firstChild && fc.firstChild.tagName == 'TH') {
                             hrc++;
                             fc = fc.nextSibling;
                         }
@@ -134,7 +169,7 @@ jQuery(document).ready(
                         // if we can find footer rows by groping
                         frc = 0;
                         var lc = b.lastChild;
-                        while (lc && lc.firstChild.tagName == 'TH') {
+                        while (lc && lc.firstChild && lc.firstChild.tagName == 'TH') {
                             frc++;
                             lc = lc.previousSibling;
                         }

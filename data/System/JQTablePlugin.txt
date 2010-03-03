@@ -14,8 +14,10 @@ Some notable omissions:
    * Sorting doesn't work correctly if you have multiple header rows
 
 *when used without TablePlugin*
-   * No sort icon in table headers (just click the header to sort)
+   * No sort icon in table headers (just click the header to sort).
+   * Sorting can be a bit strange when rowspans and colspans are used.
    * The sorted data background doesn't alternate if more than one colour is given.
+   * The way column and row spans are calculated is slightly different to TablePlugin, which may give slightly different visual effect sin some extreme cases.
 
 *when used with TablePlugin:*
    * Sorted column background doesn't work
@@ -42,7 +44,7 @@ Another great Foswiki extension from the <a style="text-decoration:none" href="h
 
 |  Author(s): | Crawford Currie http://c-dot.co.uk |
 |  Copyright: | Copyright &copy; 2010 Crawford Currie |
-|  License: |  [http://www.gnu.org/licenses/old-licenses/gpl-2.0.html][Gnu General Public License v2]] |
+|  License: |  [[http://www.gnu.org/licenses/old-licenses/gpl-2.0.html][Gnu General Public License v2]] |
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |

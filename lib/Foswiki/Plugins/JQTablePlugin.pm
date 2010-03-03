@@ -9,7 +9,7 @@ use Foswiki::Plugins ();    # For the API version
 use Foswiki::Plugins::JQueryPlugin ();
 
 our $VERSION = '$Rev: 5771 $';
-our $RELEASE = '1.1.1';
+our $RELEASE = '1.1.2';
 our $SHORTDESCRIPTION = 'Javascript implementation of the classic TablePlugin, using JQuery';
 our $NO_PREFS_IN_TOPIC = 1;
 our $DEFAULT_TABLE_SETTINGS =
