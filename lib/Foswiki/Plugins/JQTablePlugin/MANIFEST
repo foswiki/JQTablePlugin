@@ -1,11 +1,12 @@
-# Release manifest for JQTablePlugin
-data/System/JQTablePlugin.txt 0644 Documentation
-lib/Foswiki/Plugins/JQTablePlugin.pm 0644 Perl module
-lib/Foswiki/Plugins/JQTablePlugin/TableSorter.pm 0644 Perl module
-pub/System/JQTablePlugin/tables_src.js 0644 Javascript module
-pub/System/JQTablePlugin/tables.js 0644 Javascript module
-pub/System/JQTablePlugin/tables.js.gz 0644 Javascript module
-pub/System/JQTablePlugin/jquery.tablesorter.min.js 0644 Javascript module
-pub/System/JQTablePlugin/jquery.tablesorter.min.js.gz 0644 Javascript module
-pub/System/JQTablePlugin/wikiringlogo20x20.png 0644 Javascript module
-
+data/System/JQTablePlugin.txt 0644
+lib/Foswiki/Plugins/JQTablePlugin.pm 0644
+lib/Foswiki/Plugins/JQTablePlugin/TableSorter.pm 0644
+pub/System/JQTablePlugin/asc.gif 0644
+pub/System/JQTablePlugin/bg.gif 0644
+pub/System/JQTablePlugin/desc.gif 0644
+pub/System/JQTablePlugin/jquery.tablesorter.uncompressed.css 0644
+pub/System/JQTablePlugin/jquery.tablesorter.uncompressed.js 0644
+pub/System/JQTablePlugin/Makefile 0644
+pub/System/JQTablePlugin/opacity.png 0644
+pub/System/JQTablePlugin/tables.uncompressed.js 0644
+pub/System/JQTablePlugin/wikiringlogo20x20.png 0644

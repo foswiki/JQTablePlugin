@@ -8,13 +8,17 @@ sub new {
     my $session = shift || $Foswiki::Plugins::SESSION;
     my $this = bless($class->SUPER::new(
         $session,
-        name => 'tablesorter',
+        name => 'TableSorter',
         version => '2.0.3',
         author => 'Christian Bach',
+        homepage => 'http://tablesorter.com/docs/',
         puburl => '%PUBURLPATH%/%SYSTEMWEB%/JQTablePlugin',
-        javascript => [ 'jquery.tablesorter.min.js' ],
+        css => [ 'jquery.tablesorter.css' ],
+        javascript => [ 'jquery.tablesorter.js', 'tables.js'],
         summary => <<SUMMARY), $class);
-tablesorter is a jQuery plugin for turning a standard HTML table with THEAD and TBODY tags into a sortable table without page refreshes. tablesorter can successfully parse and sort many types of data including linked data in a cell.
+<nop>TableSorter is a jQuery plugin for turning a standard HTML table with THEAD and
+TBODY tags into a sortable table without page refreshes. tablesorter can
+successfully parse and sort many types of data including linked data in a cell.
 SUMMARY
     return $this;
 }
