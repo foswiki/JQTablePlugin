@@ -7,19 +7,19 @@
 %TOC%
 
 This plugin does two things:
-   1 If TablePlugin is enabled, it enhances TablePlugin with client-side column sorting (if Javascript is enabled)
-   1 If !TablePlugin is _not_ enabled, it performs the same processing as TablePlugin except it does it in the browser.
+   1 If !TablePlugin is enabled, it enhances !TablePlugin with client-side column sorting (if Javascript is enabled)
+   1 If !TablePlugin is _not_ enabled, it performs the same processing as !TablePlugin except it does it in the browser.
 
 Some notable omissions:
    * Sorting doesn't work correctly if you have multiple header rows
 
-*when used without TablePlugin*
+*when used without !TablePlugin*
    * No sort icon in table headers (just click the header to sort).
    * Sorting can be a bit strange when rowspans and colspans are used.
    * The sorted data background doesn't alternate if more than one colour is given.
-   * The way column and row spans are calculated is slightly different to TablePlugin, which may give slightly different visual effect sin some extreme cases.
+   * The way column and row spans are calculated is slightly different to !TablePlugin, which may give slightly different visual effect sin some extreme cases.
 
-*when used with TablePlugin:*
+*when used with !TablePlugin:*
    * Sorted column background doesn't work
 
 You can help improve it, please feel free to do so.
@@ -29,9 +29,9 @@ which is included.
 
 ---++ Usage
 
-If used with TablePlugin: Click on column headers to sort.
+If used with !TablePlugin: Click on column headers to sort.
 
-If used without TablePlugin: Behaviour should be identical to TablePlugin.
+If used without !TablePlugin: Behaviour should be identical to !TablePlugin.
 
 See TablePlugin for more information.
 
@@ -53,3 +53,4 @@ Another great Foswiki extension from the <a style="text-decoration:none" href="h
 |  Support: | http://foswiki.org/bin/view/Support/JQTablePlugin |
 
 <!-- Do _not_ attempt to edit this topic; it is auto-generated. -->
+%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" version="1"}%
