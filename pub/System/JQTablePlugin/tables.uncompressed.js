@@ -134,7 +134,7 @@
 
         // try and pull out head and foot
         cleanHeadAndFoot : function(t, hrc, frc) {
-            var bodies = t.find('tbody'),
+            var bodies = t.children('tbody'),
                 b = bodies[0],
                 h = t.find('thead'),
                 bratz;
@@ -146,7 +146,7 @@
                         hrc = $(b).children().length;
                     }
                 } else {
-                    // See if we can find header rows by groping
+                    // See if we can find header rows by grouping
                     hrc = 0;
                     var fc = b.firstChild;
                     while (fc && fc.firstChild && fc.firstChild.tagName == 'TH') {
@@ -387,10 +387,10 @@
       $(".jqtp_process").each(jqtp.process);
 
       // If sort is all, attach the sortable class to all tables
-      var sort = foswiki.JQTablePlugin.sort;
+      var sort = foswiki.getPreference("JQTablePlugin.sort");
       if (sort) {
           if (sort == 'all') {
-              $("table").addClass("jqtp_sortable");
+              $(".foswikiTable").addClass("jqtp_sortable");
           } else if (sort == 'attachments') {
               // Just attachments
               $(".foswikiAttachments table").addClass("jqtp_sortable");
