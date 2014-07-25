@@ -33,8 +33,9 @@ which is included.
 If used with !TablePlugin: Click on column headers to sort.
 
 If used without !TablePlugin: Behaviour should be identical to !TablePlugin.
-
 See TablePlugin for more information.
+
+%X% You cannot use the %<nop>CARET% and/or &<nop>#94; characters to 'escape' a rowspan in a table with JQTablePlugin (the !TablePlugin support is a dirty hack). To insert these characters, simply enclose them in a span e.g. =&lt;span>^&lt;/span>=.
 
 %X% If !TablePlugin is used with !JQTablePlugin, then tables will be shown with
 active links in column headers, as well as the icons that support in-browser
@@ -55,7 +56,7 @@ Another great Foswiki extension from the <a style="text-decoration:none" href="h
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
-|  1.1.3 (25 Jul 2014) | Fix Foswikitask:Item8816 |
+|  1.13 (25 Jul 2014) | Fix Foswikitask:Item8816, Foswikitask:Item12974 |
 |  Dependencies: | %$DEPENDENCIES% |
 |  Home page: | http://foswiki.org/bin/view/Extensions/JQTablePlugin |
 |  Support: | http://foswiki.org/bin/view/Support/JQTablePlugin |

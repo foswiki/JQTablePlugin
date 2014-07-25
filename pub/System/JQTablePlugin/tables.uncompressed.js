@@ -26,6 +26,7 @@
         // Process elements marked with "jqtp_process". These are generated
         // when %TABLE tags are expanded.
         process : function() {
+            $(this).removeClass("jqtp_process");
             var pdata = '({' + $(this).attr('title') + '})';
             var params = eval(pdata);
             var table = jqtp.nextTable(this);
@@ -88,7 +89,7 @@
 
             jqtp.cleanHeadAndFoot(t, hrc, frc);
 
-            jqtp.collapseCells(t);
+            jqtp.processRowspans(t);
 
             jqtp.colours(p, t);
             jqtp.borders(p, t);
@@ -100,16 +101,18 @@
         },
 
         // Find cell-collapse marks (^) and assign a rowspan
-        // to the first non-^ cell in the rows above.
-        collapseCells : function(t) {
+        // to the first non-^ cell in the rows above. This does
+        // embedded table correctly too.
+        processRowspans : function(t) {
             var span = /^\s*\^\s*$/;
-            t.find("tr").each(
+            var trs = t.find("tr");
+            trs.each(
                 function () {
-                    $(this).find("td")
-                        .add($(this).find("th"))
+                    $(this).find("td,th")
                         .filter(
                             function() {
-                                return span.test( $(this).text() );
+                                return !$(this).hasClass("jqtpRowspanned")
+                                    && span.test( $(this).text() )
                             })
                         .each(
                             function() {
@@ -118,18 +121,16 @@
                                 do {
                                     rb = rb.parent().prev()
                                         .children().eq(offset);
-                                } while (span.test(rb.text()));
-                                rb.attr("rowspan", rb.attr("rowspan") + 1);
+                                } while (rb.hasClass("jqtpRowspanned"));
+                                if (rb.attr("rowspan") == undefined)
+                                    rb.attr("rowspan", 1);
+                                rb.attr("rowspan",
+                                        parseInt(rb.attr("rowspan")) + 1);
+                                $(this).addClass("jqtpRowspanned");
                             });
                 });
             // Now chop out the spanned cells
-            t.find("td")
-            .add($(this).find("th"))
-            .filter(
-                function() {
-                    return span.test( $(this).text() );
-                })
-            .remove();
+           t.find(".jqtpRowspanned").remove();
         },
 
         // try and pull out head and foot. The browser does this job

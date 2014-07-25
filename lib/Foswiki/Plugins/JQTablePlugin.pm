@@ -8,7 +8,7 @@ use Foswiki::Func                  ();    # The plugins API
 use Foswiki::Plugins               ();    # For the API version
 use Foswiki::Plugins::JQueryPlugin ();
 
-our $VERSION = '1.1.3';
+our $VERSION = '1.13';
 our $RELEASE = '25 July 2014';
 our $SHORTDESCRIPTION =
   'Javascript implementation of the classic TablePlugin, using JQuery';
