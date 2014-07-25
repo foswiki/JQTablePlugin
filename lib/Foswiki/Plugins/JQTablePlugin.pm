@@ -8,8 +8,8 @@ use Foswiki::Func                  ();    # The plugins API
 use Foswiki::Plugins               ();    # For the API version
 use Foswiki::Plugins::JQueryPlugin ();
 
-our $VERSION = '$Rev: 5771 $';
-our $RELEASE = '1.1.2';
+our $VERSION = '1.1.3';
+our $RELEASE = '25 July 2014';
 our $SHORTDESCRIPTION =
   'Javascript implementation of the classic TablePlugin, using JQuery';
 our $NO_PREFS_IN_TOPIC = 1;
@@ -23,7 +23,6 @@ sub initPlugin {
     Foswiki::Plugins::JQueryPlugin::registerPlugin( 'tablesorter',
         'Foswiki::Plugins::JQTablePlugin::TableSorter' );
 
-    my $src = DEBUG() ? '.uncompressed' : '';
     my $sort = Foswiki::Func::getPreferencesValue('TABLEPLUGIN_SORT') || 'all';
 
     if ( $sort =~ /^(all|attachments)/ ) {

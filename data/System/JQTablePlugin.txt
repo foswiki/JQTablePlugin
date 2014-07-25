@@ -1,3 +1,4 @@
+%META:TOPICINFO{author="ProjectContributor" date="1406284840" format="1.1" version="1"}%
 ---+!! !JQTablePlugin
 <!--
    * Set SHORTDESCRIPTION = %$SHORTDESCRIPTION%
@@ -35,6 +36,12 @@ If used without !TablePlugin: Behaviour should be identical to !TablePlugin.
 
 See TablePlugin for more information.
 
+%X% If !TablePlugin is used with !JQTablePlugin, then tables will be shown with
+active links in column headers, as well as the icons that support in-browser
+sorting. Clicking on these links will cause the table plugin to sort the table
+by re-rendering the page - defeating the object of the !JQTablePlugin. To
+avoid this sort of confusion you are recommended to disable the !TablePlugin.
+
 ---++ Installation Instructions
 
 %$INSTALL_INSTRUCTIONS%
@@ -43,14 +50,15 @@ See TablePlugin for more information.
 Another great Foswiki extension from the <a style="text-decoration:none" href="http://wikiring.com"><img src="%ATTACHURLPATH%/wikiringlogo20x20.png" alt="" /> *WikiRing* </a> - working together to improve your wiki experience!
 
 |  Author(s): | Crawford Currie http://c-dot.co.uk |
-|  Copyright: | Copyright &copy; 2010 Crawford Currie |
+|  Copyright: | Copyright &copy; 2010-2014 Crawford Currie |
 |  License: |  [[http://www.gnu.org/licenses/old-licenses/gpl-2.0.html][Gnu General Public License v2]] |
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  1.1.3 (25 Jul 2014) | Fix Foswikitask:Item8816 |
 |  Dependencies: | %$DEPENDENCIES% |
 |  Home page: | http://foswiki.org/bin/view/Extensions/JQTablePlugin |
 |  Support: | http://foswiki.org/bin/view/Support/JQTablePlugin |
 
 <!-- Do _not_ attempt to edit this topic; it is auto-generated. -->
-%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" version="1"}%
+%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" version="1" user="ProjectContributor" date="1406284840"}%

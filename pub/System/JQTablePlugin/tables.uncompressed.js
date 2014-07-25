@@ -132,68 +132,97 @@
             .remove();
         },
 
-        // try and pull out head and foot
-        cleanHeadAndFoot : function(t, hrc, frc) {
-            var bodies = t.children('tbody'),
-                b = bodies[0],
-                h = t.find('thead'),
-                bratz;
-            
-            if (h.length === 0 && b.firstChild) {
-                // No THEAD, but TBODY has some rows
-                if (hrc !== undefined) {
-                    if (hrc > $(b).children().length) {
-                        hrc = $(b).children().length;
-                    }
-                } else {
-                    // See if we can find header rows by grouping
-                    hrc = 0;
-                    var fc = b.firstChild;
-                    while (fc && fc.firstChild && fc.firstChild.tagName == 'TH') {
-                        hrc++;
-                        fc = fc.nextSibling;
-                    }
+        // try and pull out head and foot. The browser does this job
+        // itself, at least for the head and the body - at least, Chrome
+        // does and probably other webkit browsers too.
+        // hrc and frc are advisory header and footer row counts
+        cleanHeadAndFoot : function(table, hrc, frc) {
+            var tbodys = table.children('tbody');
+            var tbody;
+
+            if (tbodys.length == 0) {
+                // Browsers won't normally allow this to happen,
+                // but just in case, if there's no tbody, create one
+                tbody = $('<tbody></tbody>');
+                var thead = table.children('THEAD');
+                if (thead.length > 0)
+                    // stick it after the first thead
+                    tbody.insertAfter(thead.first());
+                else
+                    // ... or at the start of the table
+                    table.prepend(tbody);
+                // Move all TR's into the tbody
+                tbody.append(table.children('TR').remove());
+            }
+            else
+                // Hope there's only one!
+                tbody = tbodys.first();
+
+            var theads = table.children('thead');
+            // Existance of a thead means hrc is ignored
+            if (theads.length == 0) {
+                // No THEAD, but body may have rows containing TH's.
+                // See how many.
+                var thcount = 0;
+                var children = tbody.children('TR');
+                var headrows = [];
+                if (hrc == undefined)
+                   hrc = children.length;
+                while (thcount < hrc) {
+                    var kid = $(children[thcount]);
+                    if (!kid.children().first().is('TH'))
+                        break;
+                    headrows.push(kid);
+                    thcount++;
                 }
+
+                if (hrc > thcount)
+                    hrc = thcount;
+
                 if (hrc > 0) {
-                    bodies.before("<thead></thead>");
-                    h = t.find('thead');
+                    table.prepend("<thead></thead>");
+                    var thead = table.children('thead');
                     while (hrc--) {
-                        bratz = $(b).children();
-                        h.append($(bratz[0]).remove());
+                        var brat = headrows.shift();
+                        thead.append(brat.remove());
                     }
                 }
             }
 
-            var f = t.find('tfoot');
-            if (f.length !== 0 && f.children().length === 0) {
+            var tfoots = table.children('TFOOT');
+            // Existance of a tfoot means frc is ignored
+            if (tfoots.length > 0 && tfoots.first().children().length == 0) {
                 // There's a bug in Render.pm that makes it generate
                 // an empty tfoot even if there are footer rows
                 // Remove empty tfoot and recompute
-                f.remove();
-                f = [];
+                tfoots[0].remove();
+                tfoots = table.children('tfoot');
             }
-            if (f.length === 0 && $(b).children().length > 0) {
-                // No TFOOT, are there enough rows in the body?
-                if (frc !== undefined) {
-                    if (frc > $(b).children().length) {
-                        frc = $(b).children().length;
-                    }
-                } else {
-                    // Footer rows not explicitly defined - see
-                    // if we can find footer rows by groping
-                    frc = 0;
-                    var lc = b.lastChild;
-                    while (lc && lc.firstChild && lc.firstChild.tagName == 'TH') {
-                        frc++;
-                        lc = lc.previousSibling;
-                    }
+
+            if (tfoots.length == 0 && frc !== undefined) {
+                // No TFOOT, but body may contain enough rows to make one
+                var tdcount = 0;
+                var children = tbody.children('TR');
+                var footrows = [];
+
+                // Can't have more rows in the footer than exist
+                if (frc > children.length)
+                    frc = children.length;
+
+                while (tdcount < frc) {
+                    var kid = $(children[children.length - 1 - tdcount]);
+                    if (!kid.children().first().is('TD,TH'))
+                        break;
+                    footrows.push(kid);
+                    tdcount++;
                 }
-                if (frc > 0) {
-                    bodies.after("<tfoot></tfoot>");
-                    f = t.find('tfoot');
+
+                if (tdcount > 0) {
+                    table.append("<tfoot></tfoot>");
+                    var tfoot = table.children('tfoot');
                     while (frc--) {
-                        bratz = $(b).children();
-                        f.append($(bratz[bratz.length - 1]).remove());
+                        var brat = footrows.pop();
+                        tfoot.append(brat.remove());
                     }
                 }
             }
