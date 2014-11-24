@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1406284840" format="1.1" version="1"}%
+%META:TOPICINFO{author="ProjectContributor" date="1416852179" format="1.1" version="1"}%
 ---+!! !JQTablePlugin
 <!--
    * Set SHORTDESCRIPTION = %$SHORTDESCRIPTION%
@@ -12,7 +12,7 @@ This plugin does two things:
    1 If !TablePlugin is _not_ enabled, it performs the same processing as !TablePlugin except it does it in the browser.
 
 Some notable omissions:
-   * Sorting doesn't work correctly if you have multiple header rows
+   * Sorting of date fields doesn't work correctly.  (Sorts as plain text)
 
 *when used without !TablePlugin*
    * No sort icon in table headers (just click the header to sort).
@@ -56,10 +56,11 @@ Another great Foswiki extension from the <a style="text-decoration:none" href="h
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  1.14 (24 Nov 2014) | Fix Foswikitask:Item13113, Corrects sorting when multiple header rows in use. |
 |  1.13 (25 Jul 2014) | Fix Foswikitask:Item8816, Foswikitask:Item12974 |
 |  Dependencies: | %$DEPENDENCIES% |
 |  Home page: | http://foswiki.org/bin/view/Extensions/JQTablePlugin |
 |  Support: | http://foswiki.org/bin/view/Support/JQTablePlugin |
 
 <!-- Do _not_ attempt to edit this topic; it is auto-generated. -->
-%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" version="1" user="ProjectContributor" date="1406284840"}%
+%META:FILEATTACHMENT{name="wikiringlogo20x20.png" attr="h" comment="" version="1" user="ProjectContributor" date="1416852179"}%
