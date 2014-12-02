@@ -26,18 +26,17 @@
 
         // Process elements marked with "jqtp_process". These are generated
         // when %TABLE tags are expanded.
-        process : function() {
-            var $this = $(this),
-                pdata = '({' + $this.attr('title') + '})',
-                params = $.parseJSON(pdata),
-                table = jqtp.nextTable(this);
+        process : function(elem) {
+            var $this = $(elem),
+                params = $this.data(),
+                $table = $(jqtp.nextTable(elem));
 
             $this.removeClass("jqtp_process");
-            if (!table) {
+            if (!$table.length) {
                 return;
             }
-            $(table).attr("jqtp_params", pdata);
-            jqtp.doTable(params, $(table));
+            $table.data(params);
+            jqtp.doTable(params, $table);
             $this.remove();
         },
         
@@ -369,48 +368,44 @@
 
         // handle sort options; cache them on the table for picking up when
         // we init tablesorter
-        makeSortable : function(elem) {
-            var sortOpts = $.extend({}, jqtp.defaultOpts),
-                $elem = $(elem),
-                pdata = $elem.attr("jqtp_params"),
-                p, sortcol, className, cols, col;
+        makeSortable: function(elem) {
+          var sortOpts = $.extend({}, jqtp.defaultOpts),
+            $elem = $(elem),
+            p = $elem.data(),
+            sortcol = [0, 0], 
+            className, cols, col;
 
-            if (pdata !== undefined) {
-                $elem.removeAttr("jqtp_params");
-                p = $.parseJSON(pdata);
-                sortcol = [0, 0];
+          if (p.initSort !== undefined) {
+            sortcol[0] = p.initSort - 1;
+            sortOpts.sortList = [sortcol];
+          }
+          if (p.initdirection !== undefined) {
+            sortcol[1] = (p.initdirection == "down") ? 1 : 0;
+            sortOpts.sortList = [sortcol];
+          }
 
-                if (p.initSort !== undefined) {
-                    sortcol[0] = p.initSort - 1;
-                    sortOpts.sortList = [sortcol];
-                }
-                if (p.initdirection !== undefined) {
-                    sortcol[1] = (p.initdirection == "down") ? 1 : 0;
-                    sortOpts.sortList = [sortcol];
-                }
+          if (p.databgsorted !== undefined) {
 
-                if (p.databgsorted !== undefined) {
+            className = 'jqtp_databgsorted_' +
+              p.databgsorted.replace(/\W/g, '_');
 
-                    className = 'jqtp_databgsorted_' +
-                        p.databgsorted.replace(/\W/g, '_');
+            /* Simplification; rather than pissing about colouring
+                     alternate rows, paint all rows the same colour. */
+            cols = p.databgsorted.split(/\s*,\s*/);
+            col = cols[0];
 
-                    /* Simplification; rather than pissing about colouring
-                       alternate rows, paint all rows the same colour. */
-                    cols = p.databgsorted.split(/\s*,\s*/);
-                    col = cols[0];
+            $("body").append('<style type="text/css">.' + className +
+              '{background-color:' + col +
+              '}</style>');
+            sortOpts.cssAsc = className;
+            sortOpts.cssDesc = className;
+          }
 
-                    $("body").append('<style type="text/css">.' + className +
-                                     '{background-color:' + col +
-                                     '}</style>');
-                    sortOpts.cssAsc = className;
-                    sortOpts.cssDesc = className;
-                }
-            }
-            if (!$elem.find("thead").length) {
-                jqtp.cleanHeadAndFoot($elem);
-            }
+          if (!$elem.find("thead").length) {
+            jqtp.cleanHeadAndFoot($elem);
+          }
 
-            $elem.tablesorter(sortOpts);
+          $elem.tablesorter(sortOpts);
         }
 
     };
@@ -440,7 +435,9 @@
     /// document ready
     $(function() {
       // Process tables with a %TABLE tag
-      $(".jqtp_process").livequery(jqtp.process);
+      $(".jqtp_process").livequery(function() {
+        jqtp.process(this);
+      });
 
       // If sort is all, attach the sortable class to all tables
       var selector = ".jqtp_sortable",

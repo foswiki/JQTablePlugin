@@ -8,7 +8,6 @@ use Assert;
 use Foswiki::Func                  ();    # The plugins API
 use Foswiki::Plugins               ();    # For the API version
 use Foswiki::Plugins::JQueryPlugin ();
-use CGI                            ();
 
 our $VERSION = '1.14';
 our $RELEASE = '24 November 2014';
@@ -25,7 +24,8 @@ sub initPlugin {
     Foswiki::Plugins::JQueryPlugin::registerPlugin( 'tablesorter',
         'Foswiki::Plugins::JQTablePlugin::TableSorter' );
 
-    my $sort = Foswiki::Func::getPreferencesValue('TABLEPLUGIN_SORT') || 'all';
+    my $sort = Foswiki::Func::getPreferencesValue('TABLEPLUGIN_SORT');
+    $sort = 'all' unless defined $sort;
 
     if ( $sort =~ /^(all|attachments)/ ) {
 
@@ -60,30 +60,32 @@ sub _TABLE {
         next if $k =~ /^_/ && $k ne '_DEFAULT';
         $p{$k} = $v;
     }
-    return CGI::div(
-        {
-            class => 'jqtp_process',
-            style => 'display:none',
 
-            # Note: manual JSON generator, due to amazing slowness
-            # of CPAN JSON module
-            title => join( ',', map { "'$_':'$p{$_}'" } keys %p ),
-        },
-        ''
-    );
+    my @htmlData = ();
+    foreach my $key ( keys %p ) {
+        push @htmlData, "data-" . $key . "='" . $p{$key} . "'";
+    }
+    return
+        "<div class='jqtp_process' style='display:none' "
+      . join( " ", @htmlData )
+      . "></div>";
 }
 
 # Copied from TablePlugin
 sub _readPluginSettings {
+
     my $configureAttrStr =
       $Foswiki::cfg{Plugins}{TablePlugin}{DefaultAttributes};
+
     my $pluginAttrStr =
       Foswiki::Func::getPreferencesValue('TABLEPLUGIN_TABLEATTRIBUTES');
 
-    $configureAttrStr ||= $DEFAULT_TABLE_SETTINGS;
+    $configureAttrStr = $DEFAULT_TABLE_SETTINGS
+      unless defined $configureAttrStr;
 
     $configureAttrStr = Foswiki::Func::expandCommonVariables($configureAttrStr)
       if $configureAttrStr;
+
     $pluginAttrStr = Foswiki::Func::expandCommonVariables($pluginAttrStr)
       if $pluginAttrStr;
 
