@@ -20,23 +20,25 @@
         },
 
         defaultOpts: {
-          debug: true,
+          debug: false,
           widgets: ['colorize']
         },
 
         // Process elements marked with "jqtp_process". These are generated
         // when %TABLE tags are expanded.
         process : function() {
-            $(this).removeClass("jqtp_process");
-            var pdata = '({' + $(this).attr('title') + '})';
-            var params = eval(pdata);
-            var table = jqtp.nextTable(this);
+            var $this = $(this),
+                pdata = '({' + $this.attr('title') + '})',
+                params = $.parseJSON(pdata),
+                table = jqtp.nextTable(this);
+
+            $this.removeClass("jqtp_process");
             if (!table) {
                 return;
             }
             $(table).attr("jqtp_params", pdata);
             jqtp.doTable(params, $(table));
-            $(this).remove();
+            $this.remove();
         },
         
         // Find the next TABLE tag after the given element. This matches
@@ -85,8 +87,8 @@
                 t.append("<caption>" + p.caption + "</caption>");
             }
 
-            var hrc = p.headerrows;
-            var frc = p.footerrows;
+            var hrc = p.headerrows,
+                frc = p.footerrows;
 
             jqtp.cleanHeadAndFoot(t, hrc, frc);
 
@@ -105,28 +107,29 @@
         // to the first non-^ cell in the rows above. This does
         // embedded table correctly too.
         processRowspans : function(t) {
-            var span = /^\s*\^\s*$/;
-            var trs = t.find("tr");
+            var span = /^\s*\^\s*$/,
+                trs = t.find("tr");
+
             trs.each(
                 function () {
                     $(this).find("td,th")
                         .filter(
                             function() {
-                                return !$(this).hasClass("jqtpRowspanned")
-                                    && span.test( $(this).text() )
+                                return !$(this).hasClass("jqtpRowspanned") && span.test( $(this).text() );
                             })
                         .each(
                             function() {
-                                var offset = $(this).prevAll().length;
-                                var rb = $(this);
+                                var offset = $(this).prevAll().length,
+                                    rb = $(this);
                                 do {
                                     rb = rb.parent().prev()
                                         .children().eq(offset);
                                 } while (rb.hasClass("jqtpRowspanned"));
-                                if (rb.attr("rowspan") == undefined)
+                                if (rb.attr("rowspan") === undefined) {
                                     rb.attr("rowspan", 1);
+                                }
                                 rb.attr("rowspan",
-                                        parseInt(rb.attr("rowspan")) + 1);
+                                        parseInt(rb.attr("rowspan"), 10) + 1);
                                 $(this).addClass("jqtpRowspanned");
                             });
                 });
@@ -139,61 +142,66 @@
         // does and probably other webkit browsers too.
         // hrc and frc are advisory header and footer row counts
         cleanHeadAndFoot : function(table, hrc, frc) {
-            var tbodys = table.children('tbody');
-            var tbody;
+            var tbodys = table.children('tbody'),
+                tbody, thead, theads, thcount, children, headrows, kid, brat, tfoots, tdcount, footrows, tfoot;
 
-            if (tbodys.length == 0) {
+            if (tbodys.length === 0) {
                 // Browsers won't normally allow this to happen,
                 // but just in case, if there's no tbody, create one
                 tbody = $('<tbody></tbody>');
-                var thead = table.children('THEAD');
-                if (thead.length > 0)
+                thead = table.children('THEAD');
+                if (thead.length > 0) {
                     // stick it after the first thead
                     tbody.insertAfter(thead.first());
-                else
+                } else {
                     // ... or at the start of the table
                     table.prepend(tbody);
+                }
                 // Move all TR's into the tbody
                 tbody.append(table.children('TR').remove());
             }
-            else
+            else {
                 // Hope there's only one!
                 tbody = tbodys.first();
+            }
 
-            var theads = table.children('thead');
+            theads = table.children('thead');
             // Existance of a thead means hrc is ignored
-            if (theads.length == 0) {
+            if (theads.length === 0) {
                 // No THEAD, but body may have rows containing TH's.
                 // See how many.
-                var thcount = 0;
-                var children = tbody.children('TR');
-                var headrows = [];
-                if (hrc == undefined)
+                thcount = 0;
+                children = tbody.children('TR');
+                headrows = [];
+                if (typeof(hrc) === 'undefined') {
                    hrc = children.length;
+                }
                 while (thcount < hrc) {
-                    var kid = $(children[thcount]);
-                    if (!kid.children().first().is('TH'))
+                    kid = $(children[thcount]);
+                    if (!kid.children().first().is('TH')) {
                         break;
+                    }
                     headrows.push(kid);
                     thcount++;
                 }
 
-                if (hrc > thcount)
+                if (hrc > thcount) {
                     hrc = thcount;
+                }
 
                 if (hrc > 0) {
                     table.prepend("<thead></thead>");
-                    var thead = table.children('thead');
+                    thead = table.children('thead');
                     while (hrc--) {
-                        var brat = headrows.shift();
+                        brat = headrows.shift();
                         thead.append(brat.remove());
                     }
                 }
             }
 
-            var tfoots = table.children('TFOOT');
+            tfoots = table.children('TFOOT');
             // Existance of a tfoot means frc is ignored
-            if (tfoots.length > 0 && tfoots.first().children().length == 0) {
+            if (tfoots.length > 0 && tfoots.first().children().length === 0) {
                 // There's a bug in Render.pm that makes it generate
                 // an empty tfoot even if there are footer rows
                 // Remove empty tfoot and recompute
@@ -201,29 +209,31 @@
                 tfoots = table.children('tfoot');
             }
 
-            if (tfoots.length == 0 && frc !== undefined) {
+            if (tfoots.length === 0 && frc !== undefined) {
                 // No TFOOT, but body may contain enough rows to make one
-                var tdcount = 0;
-                var children = tbody.children('TR');
-                var footrows = [];
+                tdcount = 0;
+                children = tbody.children('TR');
+                footrows = [];
 
                 // Can't have more rows in the footer than exist
-                if (frc > children.length)
+                if (frc > children.length) {
                     frc = children.length;
+                }
 
                 while (tdcount < frc) {
-                    var kid = $(children[children.length - 1 - tdcount]);
-                    if (!kid.children().first().is('TD,TH'))
+                    kid = $(children[children.length - 1 - tdcount]);
+                    if (!kid.children().first().is('TD,TH')) {
                         break;
+                    }
                     footrows.push(kid);
                     tdcount++;
                 }
 
                 if (tdcount > 0) {
                     table.append("<tfoot></tfoot>");
-                    var tfoot = table.children('tfoot');
+                    tfoot = table.children('tfoot');
                     while (frc--) {
-                        var brat = footrows.pop();
+                        brat = footrows.pop();
                         tfoot.append(brat.remove());
                     }
                 }
@@ -285,6 +295,8 @@
 
         // handle layout options
         layout: function(p, t) {
+            var h, cw;
+
             if (p.cellpadding !== undefined) {
                 t[0].cellPadding = p.cellpadding;
             }
@@ -295,13 +307,14 @@
                 t[0].width = p.tablewidth;
             }
             if (p.columnwidths !== undefined) {
-                var cw = p.columnwidths.split(/\s*,\s*/);
-                var h = t.find('tr').each(
+                cw = p.columnwidths.split(/\s*,\s*/);
+                h = t.find('tr').each(
                     function() {
-                        var i = 0;
-                        var kid = this.firstChild;
+                        var i = 0,
+                            kid = this.firstChild, cs;
+
                         while (kid && i < cw.length) {
-                            var cs = kid.colSpan;
+                            cs = kid.colSpan;
                             if (cs < 1) {
                               cs = 1;
                             }
@@ -358,13 +371,14 @@
         // we init tablesorter
         makeSortable : function(elem) {
             var sortOpts = $.extend({}, jqtp.defaultOpts),
-                $elem = $(elem);
-                pdata = $elem.attr("jqtp_params");
+                $elem = $(elem),
+                pdata = $elem.attr("jqtp_params"),
+                p, sortcol, className, cols, col;
 
             if (pdata !== undefined) {
                 $elem.removeAttr("jqtp_params");
-                var p = eval(pdata);
-                var sortcol = [0, 0];
+                p = $.parseJSON(pdata);
+                sortcol = [0, 0];
 
                 if (p.initSort !== undefined) {
                     sortcol[0] = p.initSort - 1;
@@ -377,13 +391,13 @@
 
                 if (p.databgsorted !== undefined) {
 
-                    var className = 'jqtp_databgsorted_' +
+                    className = 'jqtp_databgsorted_' +
                         p.databgsorted.replace(/\W/g, '_');
 
                     /* Simplification; rather than pissing about colouring
                        alternate rows, paint all rows the same colour. */
-                    var cols = p.databgsorted.split(/\s*,\s*/);
-                    var col = cols[0];
+                    cols = p.databgsorted.split(/\s*,\s*/);
+                    col = cols[0];
 
                     $("body").append('<style type="text/css">.' + className +
                                      '{background-color:' + col +

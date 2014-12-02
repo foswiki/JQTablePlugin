@@ -8,7 +8,7 @@ use Assert;
 use Foswiki::Func                  ();    # The plugins API
 use Foswiki::Plugins               ();    # For the API version
 use Foswiki::Plugins::JQueryPlugin ();
-use CGI ();
+use CGI                            ();
 
 our $VERSION = '1.14';
 our $RELEASE = '24 November 2014';
@@ -31,7 +31,8 @@ sub initPlugin {
 
         # In this special case, the tablesorter is always required
         Foswiki::Plugins::JQueryPlugin::createPlugin('tablesorter');
-        Foswiki::Func::addToZone( 'script', 'JQTABLEPLUGIN::SORT', <<HERE, 'JQUERYPLUGIN::FOSWIKI::PREFERENCES');
+        Foswiki::Func::addToZone( 'script', 'JQTABLEPLUGIN::SORT',
+            <<HERE, 'JQUERYPLUGIN::FOSWIKI::PREFERENCES' );
 <script type='text/javascript'>
 jQuery.extend(foswiki.preferences, {
   'JQTablePlugin.sort' : '$sort'
