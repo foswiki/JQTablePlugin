@@ -1,0 +1,12 @@
+*.gz
+pub/System/JQTablePlugin/jquery.tablesorter.js
+pub/System/JQTablePlugin/tables.js
+pub/System/JQTablePlugin/jquery.tablesorter.css
+*.swp
+JQTablePlugin.md5
+JQTablePlugin.sha1
+JQTablePlugin.tgz
+JQTablePlugin.txt
+JQTablePlugin.zip
+JQTablePlugin_installer
+JQTablePlugin_installer.pl

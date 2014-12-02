@@ -1,12 +1,14 @@
 # See end of file for license and copyright information
 package Foswiki::Plugins::JQTablePlugin;
 
+use warnings;
 use strict;
 use Assert;
 
 use Foswiki::Func                  ();    # The plugins API
 use Foswiki::Plugins               ();    # For the API version
 use Foswiki::Plugins::JQueryPlugin ();
+use CGI ();
 
 our $VERSION = '1.14';
 our $RELEASE = '24 November 2014';
@@ -29,8 +31,12 @@ sub initPlugin {
 
         # In this special case, the tablesorter is always required
         Foswiki::Plugins::JQueryPlugin::createPlugin('tablesorter');
-        Foswiki::Func::addToZone( 'head', 'JQTABLEPLUGIN::SORT', <<HERE);
-<meta name="foswiki.JQTablePlugin.sort" content="$sort" />
+        Foswiki::Func::addToZone( 'script', 'JQTABLEPLUGIN::SORT', <<HERE, 'JQUERYPLUGIN::FOSWIKI::PREFERENCES');
+<script type='text/javascript'>
+jQuery.extend(foswiki.preferences, {
+  'JQTablePlugin.sort' : '$sort'
+});
+</script>
 HERE
     }
 

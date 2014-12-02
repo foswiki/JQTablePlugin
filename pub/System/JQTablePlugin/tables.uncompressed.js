@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Foswiki Contributors 2010
+ * Copyright (C) Foswiki Contributors 2010-2014
  * Author: Crawford Currie http://c-dot.co.uk
  * Javascript implementation of TablePlugin
  * Uses the jQuery tablesorter plugin
@@ -20,6 +20,7 @@
         },
 
         defaultOpts: {
+          debug: true,
           widgets: ['colorize']
         },
 
@@ -355,12 +356,13 @@
 
         // handle sort options; cache them on the table for picking up when
         // we init tablesorter
-        makeSortable : function() {
-            var sortOpts = $.extend({}, jqtp.defaultOpts);
+        makeSortable : function(elem) {
+            var sortOpts = $.extend({}, jqtp.defaultOpts),
+                $elem = $(elem);
+                pdata = $elem.attr("jqtp_params");
 
-            var pdata = $(this).attr("jqtp_params");
             if (pdata !== undefined) {
-                $(this).removeAttr("jqtp_params");
+                $elem.removeAttr("jqtp_params");
                 var p = eval(pdata);
                 var sortcol = [0, 0];
 
@@ -390,11 +392,11 @@
                     sortOpts.cssDesc = className;
                 }
             }
-            if (!$(this).find("thead").length) {
-                jqtp.cleanHeadAndFoot($(this));
+            if (!$elem.find("thead").length) {
+                jqtp.cleanHeadAndFoot($elem);
             }
 
-            $(this).tablesorter(sortOpts);
+            $elem.tablesorter(sortOpts);
         }
 
     };
@@ -411,24 +413,39 @@
       }
     });
 
+    // add javascript date parser
+    $.tablesorter.addParser({
+        id: "date",
+        is: function (s) {
+            return !isNaN((new Date(s)).getTime());
+        }, format: function (s) {
+            return $.tablesorter.formatFloat(new Date(s).getTime());
+        }, type: "numeric"
+    });
+
     /// document ready
     $(function() {
       // Process tables with a %TABLE tag
-      $(".jqtp_process").each(jqtp.process);
+      $(".jqtp_process").livequery(jqtp.process);
 
       // If sort is all, attach the sortable class to all tables
-      var sort = foswiki.getPreference("JQTablePlugin.sort");
+      var selector = ".jqtp_sortable",
+          sort = foswiki.getPreference("JQTablePlugin.sort");
+
       if (sort) {
           if (sort == 'all') {
-              $(".foswikiTable").addClass("jqtp_sortable");
+              selector += ", .foswikiTable";
           } else if (sort == 'attachments') {
               // Just attachments
-              $(".foswikiAttachments table").addClass("jqtp_sortable");
+              selector += ", .foswikiAttachments table";
           }
       }
 
       // Process tables marked as sortable
-      $(".jqtp_sortable").each(jqtp.makeSortable);
+      $(selector).livequery(function() {
+        $(this).addClass("jqtp_sortable");
+        jqtp.makeSortable(this);
+      });
     });
 
 })(jQuery);
