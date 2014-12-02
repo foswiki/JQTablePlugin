@@ -448,10 +448,10 @@
 
       if (sort) {
           if (sort == 'all') {
-              selector += ", .foswikiTable";
+              selector += ", .foswikiTable:not(.foswikiTableInited)";
           } else if (sort == 'attachments') {
               // Just attachments
-              selector += ", .foswikiAttachments table";
+              selector += ", .foswikiAttachments:not(.foswikiAttachmentsInited) table";
           }
       }
 
