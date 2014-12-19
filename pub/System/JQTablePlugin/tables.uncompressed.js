@@ -445,7 +445,7 @@
 
         // Process all tables found in .foswikiContent (otherwise we
         // may screw up page headers / footers / menus)
-        $('div.foswikiTopic table').livequery(function() {
+        $('table.foswikiTable').livequery(function() {
             jqtp.process_table($(this));
         });
 
