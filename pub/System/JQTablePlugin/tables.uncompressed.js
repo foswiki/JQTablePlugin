@@ -20,29 +20,30 @@
         },
 
         defaultOpts: {
-          debug: false,
-          widgets: ['colorize']
+            debug: false,
+            widgets: ['colorize']
         },
 
-        // Process elements marked with "jqtp_process". These are generated
-        // when %TABLE tags are expanded.
-        process : function(elem) {
+        // Move the data associated with an element marked with the class
+        // 'jqtp_process' to the next TABLE tag. This is required because
+        // %TABLE expands to a DIV which has to be associated with
+        // a table before it is deleted from the DOM.
+        move_table_data : function(elem) {
             var $this = $(elem),
                 params = $this.data(),
-                $table = $(jqtp.nextTable(elem));
+                $table = $(jqtp.next_table(elem));
 
             $this.removeClass("jqtp_process");
             if (!$table.length) {
                 return;
             }
-            $table.data(params);
-            jqtp.doTable(params, $table);
+            $table.data('jqtp_process', params);
             $this.remove();
         },
         
         // Find the next TABLE tag after the given element. This matches
         // a %TABLE with the following <table>
-        nextTable : function(el) {
+        next_table : function(el) {
             if (el === null) {
                 return null;
             }
@@ -74,47 +75,55 @@
             }
         },
 
-        // Apply the given %TABLE params (p) to a table (t)
-        doTable : function(p, t) {
-            if (p.id !== undefined) {
-                t.id = p.id;
+        // Process a table found in the page body. Optional control
+        // %TABLE control parameters will have been moved from the
+        // preceding <div class=jqtp_process into data-jqtp_process
+        // by move_table_data, but is not relied on; the function works
+        // on all tables regardless of the existance of companion
+        // jqtp_process parameters.
+        process_table : function($table) {
+            var p = $table.data('jqtp_process');
+            if (p !== undefined) {
+                if (p.id !== undefined) {
+                    $table.id = p.id;
+                }
+                if (p.summary !== undefined) {
+                    $table.summary = p.summary;
+                }
+                if (p.caption !== undefined) {
+                    $table.append("<caption>" + p.caption + "</caption>");
+                }
             }
-            if (p.summary !== undefined) {
-                t.summary = p.summary;
-            }
-            if (p.caption !== undefined) {
-                t.append("<caption>" + p.caption + "</caption>");
-            }
 
-            var hrc = p.headerrows,
-                frc = p.footerrows;
+            jqtp.simplify_head_and_foot($table, p);
 
-            jqtp.cleanHeadAndFoot(t, hrc, frc);
+            jqtp.process_rowspans($table);
 
-            jqtp.processRowspans(t);
+            if (p !== undefined) {
+                jqtp.process_colours($table, p);
+                jqtp.add_borders($table, p);
+                jqtp.adjust_layout($table, p);
+                jqtp.align($table, p);
 
-            jqtp.colours(p, t);
-            jqtp.borders(p, t);
-            jqtp.layout(p, t);
-            jqtp.align(p, t);
-            if (p.sort == "on" && (p.disableallsort != "on")) {
-                t.addClass("jqtp_sortable");
+                if (p.sort == "on" && (p.disableallsort != "on")) {
+                    $table.addClass("jqtp_sortable");
+                }
             }
         },
 
         // Find cell-collapse marks (^) and assign a rowspan
         // to the first non-^ cell in the rows above. This does
-        // embedded table correctly too.
-        processRowspans : function(t) {
-            var span = /^\s*\^\s*$/,
-                trs = t.find("tr");
+        // embedded tables correctly too.
+        process_rowspans : function($t) {
+            var span = /^\s*\^\s*$/;
 
-            trs.each(
+            $t.find("tr").each(
                 function () {
                     $(this).find("td,th")
                         .filter(
                             function() {
-                                return !$(this).hasClass("jqtpRowspanned") && span.test( $(this).text() );
+                                return !$(this).hasClass("jqtpRowspanned")
+                                    && span.test( $(this).text() );
                             })
                         .each(
                             function() {
@@ -133,54 +142,57 @@
                             });
                 });
             // Now chop out the spanned cells
-           t.find(".jqtpRowspanned").remove();
+            $t.find(".jqtpRowspanned").remove();
         },
 
         // try and pull out head and foot. The browser does this job
         // itself, at least for the head and the body - at least, Chrome
         // does and probably other webkit browsers too.
-        // hrc and frc are advisory header and footer row counts
-        cleanHeadAndFoot : function(table, hrc, frc) {
-            var tbodys = table.children('tbody'),
-                tbody, thead, theads, thcount, children, headrows, kid, brat, tfoots, tdcount, footrows, tfoot;
+        // p provides advisory header and footer row counts (hrc and frc)
+        simplify_head_and_foot : function($table, p) {
+            if (!p) p = {};
+            var hrc = p.headerrows,
+                frc = p.footerrows;
+            var $tbody, $thead, thcount, $children, headrows,
+                $kid, tdcount, footrows, $tfoot;
 
-            if (tbodys.length === 0) {
+            $tbody = $table.children('tbody');
+            if ($tbody.length === 0) {
                 // Browsers won't normally allow this to happen,
                 // but just in case, if there's no tbody, create one
-                tbody = $('<tbody></tbody>');
-                thead = table.children('THEAD');
+                $tbody = $('<tbody></tbody>');
+                $thead = $table.children('THEAD');
                 if (thead.length > 0) {
                     // stick it after the first thead
-                    tbody.insertAfter(thead.first());
+                    $tbody.insertAfter($thead.first());
                 } else {
                     // ... or at the start of the table
-                    table.prepend(tbody);
+                    $table.prepend($tbody);
                 }
-                // Move all TR's into the tbody
-                tbody.append(table.children('TR').remove());
+                // Move all top-level TR's into the tbody
+                $tbody.append($table.children('TR').remove());
             }
             else {
                 // Hope there's only one!
-                tbody = tbodys.first();
+                $tbody = $tbody.first();
             }
 
-            theads = table.children('thead');
             // Existance of a thead means hrc is ignored
-            if (theads.length === 0) {
+            if ($table.children('thead').length === 0) {
                 // No THEAD, but body may have rows containing TH's.
                 // See how many.
                 thcount = 0;
-                children = tbody.children('TR');
+                $children = $tbody.children('TR');
                 headrows = [];
                 if (typeof(hrc) === 'undefined') {
-                   hrc = children.length;
+                   hrc = $children.length;
                 }
                 while (thcount < hrc) {
-                    kid = $(children[thcount]);
-                    if (!kid.children().first().is('TH')) {
+                    $kid = $($children[thcount]);
+                    if (!$kid.children().first().is('TH')) {
                         break;
                     }
-                    headrows.push(kid);
+                    headrows.push($kid);
                     thcount++;
                 }
 
@@ -189,61 +201,60 @@
                 }
 
                 if (hrc > 0) {
-                    table.prepend("<thead></thead>");
-                    thead = table.children('thead');
+                    $thead = $("<thead></thead>");
                     while (hrc--) {
-                        brat = headrows.shift();
-                        thead.append(brat.remove());
+                        $thead.append(headrows.shift().remove());
                     }
+                    $table.prepend($thead);
                 }
             }
 
-            tfoots = table.children('TFOOT');
-            // Existance of a tfoot means frc is ignored
-            if (tfoots.length > 0 && tfoots.first().children().length === 0) {
-                // There's a bug in Render.pm that makes it generate
-                // an empty tfoot even if there are footer rows
-                // Remove empty tfoot and recompute
-                tfoots[0].remove();
-                tfoots = table.children('tfoot');
-            }
+            // There's a bug in Render.pm that makes it generate
+            // an empty tfoot even if there are footer rows
+            $table.children('tfoot')
+                .filter(function() {
+                    return ($(this).chidren().length === 0)
+                })
+                .remove();
 
-            if (tfoots.length === 0 && frc !== undefined) {
+            // Existance of a tfoot means frc is ignored
+            if (frc !== undefined
+                && $table.children('tfoot').length == 0) {
+
                 // No TFOOT, but body may contain enough rows to make one
                 tdcount = 0;
-                children = tbody.children('TR');
+                $children = $tbody.children('TR');
                 footrows = [];
 
                 // Can't have more rows in the footer than exist
-                if (frc > children.length) {
-                    frc = children.length;
+                if (frc > $children.length) {
+                    frc = $children.length;
                 }
 
                 while (tdcount < frc) {
-                    kid = $(children[children.length - 1 - tdcount]);
-                    if (!kid.children().first().is('TD,TH')) {
+                    $kid = $($children[$children.length - 1 - tdcount]);
+                    if (!$kid.children().first().is('TD,TH')) {
                         break;
                     }
-                    footrows.push(kid);
+                    footrows.push($kid);
                     tdcount++;
                 }
 
                 if (tdcount > 0) {
-                    table.append("<tfoot></tfoot>");
-                    tfoot = table.children('tfoot');
+                    $tfoot = $("<tfoot></tfoot>");
                     while (frc--) {
-                        brat = footrows.pop();
-                        tfoot.append(brat.remove());
+                        $tfoot.append(footrows.pop().remove());
                     }
+                    $table.append($tfoot);
                 }
             }
         },
 
         // handle colour options
-        colours : function(p, t) {
+        process_colours : function($t, p) {
             var h,c,i;
             if (p.headerbg !== undefined || p.headercolor !== undefined) {
-                h = t.find('thead').add(t.find('tfoot'));
+                h = $t.find('thead').add($t.find('tfoot'));
                 if (h.length) {
                     if (p.headerbg !== undefined) {
                         h.css("background-color", p.headerbg);
@@ -254,7 +265,7 @@
                 }
             }
             if (p.databg !== undefined || p.datacolor !== undefined) {
-                h = t.find('tbody > tr');
+                h = $t.find('tbody > tr');
                 if (h.length) {
                     if (p.databg !== undefined) {
                         c = p.databg.split(/\s*,\s*/);
@@ -275,39 +286,40 @@
         },
 
         // handle border options
-        borders: function(p, t) {
+        add_borders: function($t, p) {
             if (p.tableborder !== undefined) {
-                t[0].border = p.tableborder;
+                $t[0].border = p.tableborder;
             }
-            if (p.tableframe !== undefined && jqtp.tableframe[p.tableframe] !== undefined) {
-                t.css('border-style', jqtp.tableframe[p.tableframe]);
+            if (p.tableframe !== undefined
+                && jqtp.tableframe[p.tableframe] !== undefined) {
+                $t.css('border-style', jqtp.tableframe[p.tableframe]);
             }
             if (p.tablerules === undefined) {
                 p.tablerules = "rows";
             }
-            t[0].rules = p.tablerules;
+            $t[0].rules = p.tablerules;
             if (p.cellborder !== undefined) {
-                t.find("td").add(t.find("th"))
+                $t.find("td").add($t.find("th"))
                     .css("border-width", jqtp.unitify(p.cellborder));
             }
         },
 
         // handle layout options
-        layout: function(p, t) {
+        adjust_layout: function($t, p) {
             var h, cw;
 
             if (p.cellpadding !== undefined) {
-                t[0].cellPadding = p.cellpadding;
+                $t[0].cellPadding = p.cellpadding;
             }
             if (p.cellpadding !== undefined) {
-                t[0].cellSpacing = p.cellspacing;
+                $t[0].cellSpacing = p.cellspacing;
             }
             if (p.tablewidth !== undefined) {
-                t[0].width = p.tablewidth;
+                $t[0].width = p.tablewidth;
             }
             if (p.columnwidths !== undefined) {
                 cw = p.columnwidths.split(/\s*,\s*/);
-                h = t.find('tr').each(
+                h = $t.find('tr').each(
                     function() {
                         var i = 0,
                             kid = this.firstChild, cs;
@@ -331,10 +343,10 @@
         },
 
         // handle alignment options
-        align : function(p, t) {
-            if (p.valign === undefined) {
+        align : function($t, p) {
+            if (p.valign === undefined)
                 p.valign = "top";
-            }
+ 
             if (p.headervalign === undefined) {
                 p.headervalign = p.valign;
             }
@@ -342,84 +354,76 @@
                 p.datavalign = p.valign;
             }
 
-            t.find("thead > tr > th")
-            .add(t.find("thead > tr > td"))
-            .add(t.find("tfoot > tr > th"))
-            .add(t.find("tfoot > tr > td"))
-            .css("vertical-align", p.headervalign);
-
-            t.find("tbody > tr > td")
-            .add(t.find("tbody > tr > th"))
-            .css("vertical-align", p.datavalign);
-
-            if (p.headeralign) {
-                t.find("thead > tr > th")
-                    .add(t.find("thead > tr > td"))
-                    .add(t.find("tfoot > tr > th"))
-                    .add(t.find("tfoot > tr > td"))
+            if (p.headeralign !== undefined) {
+                $t.find("thead > tr > th")
+                    .add($t.find("thead > tr > td"))
+                    .add($t.find("tfoot > tr > th"))
+                    .add($t.find("tfoot > tr > td"))
+                    .css("vertical-align", p.headervalign)
                     .css("text-align", p.headeralign);
             }
-            if (p.dataalign) {
-                t.find("tbody > tr > td")
-                    .add(t.find("tbody > tr > th"))
-                    .css("text-align", p.headeralign);
+
+            if (p.dataalign !== undefined) {
+                $t.find("tbody > tr > td")
+                    .add($t.find("tbody > tr > th"))
+                    .css("vertical-align", p.datavalign)
+                    .css("text-align", p.dataalign);
             }
         },
 
         // handle sort options; cache them on the table for picking up when
         // we init tablesorter
-        makeSortable: function(elem) {
-          var sortOpts = $.extend({}, jqtp.defaultOpts),
+        make_sortable: function(elem) {
+            var sortOpts = $.extend({}, jqtp.defaultOpts),
             $elem = $(elem),
             p = $elem.data(),
             sortcol = [0, 0], 
             className, cols, col;
 
-          if (p.initSort !== undefined) {
-            sortcol[0] = p.initSort - 1;
-            sortOpts.sortList = [sortcol];
-          }
-          if (p.initdirection !== undefined) {
-            sortcol[1] = (p.initdirection == "down") ? 1 : 0;
-            sortOpts.sortList = [sortcol];
-          }
+            if (p.initSort !== undefined) {
+                sortcol[0] = p.initSort - 1;
+                sortOpts.sortList = [sortcol];
+            }
+            if (p.initdirection !== undefined) {
+                sortcol[1] = (p.initdirection == "down") ? 1 : 0;
+                sortOpts.sortList = [sortcol];
+            }
 
-          if (p.databgsorted !== undefined) {
+            if (p.databgsorted !== undefined) {
 
-            className = 'jqtp_databgsorted_' +
-              p.databgsorted.replace(/\W/g, '_');
+                className = 'jqtp_databgsorted_' +
+                    p.databgsorted.replace(/\W/g, '_');
 
-            /* Simplification; rather than pissing about colouring
-                     alternate rows, paint all rows the same colour. */
-            cols = p.databgsorted.split(/\s*,\s*/);
-            col = cols[0];
+                /* Simplification; rather than pissing about colouring
+                   alternate rows, paint all rows the same colour. */
+                cols = p.databgsorted.split(/\s*,\s*/);
+                col = cols[0];
 
-            $("body").append('<style type="text/css">.' + className +
-              '{background-color:' + col +
-              '}</style>');
-            sortOpts.cssAsc = className;
-            sortOpts.cssDesc = className;
-          }
+                $("body").append('<style type="text/css">.' + className +
+                                 '{background-color:' + col +
+                                 '}</style>');
+                sortOpts.cssAsc = className;
+                sortOpts.cssDesc = className;
+            }
 
-          if (!$elem.find("thead").length) {
-            jqtp.cleanHeadAndFoot($elem);
-          }
+            if (!$elem.find("thead").length) {
+                jqtp._simplify_head_and_foot($elem);
+            }
 
-          $elem.tablesorter(sortOpts);
+            $elem.tablesorter(sortOpts);
         }
-
     };
 
     // colorize columns
     $.tablesorter.addWidget({
-      id: 'colorize',
-      format: function(table) {
-        $(".sorted", table).removeClass("sorted");
-        $("th.headerSortDown, th.headerSortUp", table).each(function() {
-          var index = this.cellIndex +1;
-          $("td:nth-child("+index+")", table).addClass("sorted");
-        });
-      }
+        id: 'colorize',
+        format: function(table) {
+            $(".sorted", table).removeClass("sorted");
+            $("th.headerSortDown, th.headerSortUp", table).each(function() {
+                var index = this.cellIndex +1;
+                $("td:nth-child("+index+")", table).addClass("sorted");
+            });
+        }
     });
 
     // add javascript date parser
@@ -434,29 +438,35 @@
 
     /// document ready
     $(function() {
-      // Process tables with a %TABLE tag
-      $(".jqtp_process").livequery(function() {
-        jqtp.process(this);
-      });
+        // Move %TABLE tag data to neighbouring TABLE
+        $(".jqtp_process").livequery(function() {
+            jqtp.move_table_data(this);
+        });
 
-      // If sort is all, attach the sortable class to all tables
-      var selector = ".jqtp_sortable",
-          sort = foswiki.getPreference("JQTablePlugin.sort");
+        // Process all tables found in .foswikiContent (otherwise we
+        // may screw up page headers / footers / menus)
+        $('div.foswikiTopic table').livequery(function() {
+            jqtp.process_table($(this));
+        });
 
-      if (sort) {
-          if (sort == 'all') {
-              selector += ", .foswikiTable:not(.foswikiTableInited)";
-          } else if (sort == 'attachments') {
-              // Just attachments
-              selector += ", .foswikiAttachments:not(.foswikiAttachmentsInited) table";
-          }
-      }
+        // If sort is all, attach the sortable class to all tables
+        var selector = ".jqtp_sortable",
+           sort = foswiki.getPreference("JQTablePlugin.sort");
 
-      // Process tables marked as sortable
-      $(selector).livequery(function() {
-        $(this).addClass("jqtp_sortable");
-        jqtp.makeSortable(this);
-      });
+        if (sort) {
+            if (sort == 'all') {
+                selector += ", .foswikiTable:not(.foswikiTableInited)";
+            } else if (sort == 'attachments') {
+                // Just attachments
+                selector += ", .foswikiAttachments:not(.foswikiAttachmentsInited) table";
+            }
+        }
+
+        // Process tables marked as sortable
+        $(selector).livequery(function() {
+            $(this).addClass("jqtp_sortable");
+            jqtp.make_sortable(this);
+        });
     });
 
 })(jQuery);
