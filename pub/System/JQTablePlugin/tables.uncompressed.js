@@ -407,7 +407,7 @@
             }
 
             if (!$elem.find("thead").length) {
-                jqtp._simplify_head_and_foot($elem);
+                jqtp.simplify_head_and_foot($elem);
             }
 
             $elem.tablesorter(sortOpts);
