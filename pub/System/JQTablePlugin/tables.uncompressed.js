@@ -213,7 +213,7 @@
             // an empty tfoot even if there are footer rows
             $table.children('tfoot')
                 .filter(function() {
-                    return ($(this).chidren().length === 0)
+                    return ($(this).children().length === 0)
                 })
                 .remove();
 

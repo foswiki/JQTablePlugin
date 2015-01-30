@@ -171,7 +171,7 @@
 
                         var p = false;
 
-                        if ($.metadata && ($($headers[i]).metadata() && $($headers[i]).metadata().sorter)) {
+                        if ($.metadata && $headers[i] && ($($headers[i]).metadata() && $($headers[i]).metadata().sorter)) {
 
                             p = getParserById($($headers[i]).metadata().sorter);
 
