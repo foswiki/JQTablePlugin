@@ -56,6 +56,7 @@ Another great Foswiki extension from the <a style="text-decoration:none" href="h
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  1.1.5 (25 Apr 2017) | Foswikitask:Item13239: Michael Daum fixed some JS errors |
 |  1.14 (24 Nov 2014) | Fix Foswikitask:Item13113, Corrects sorting when multiple header rows in use. |
 |  1.13 (25 Jul 2014) | Fix Foswikitask:Item8816, Foswikitask:Item12974 |
 |  Dependencies: | %$DEPENDENCIES% |
